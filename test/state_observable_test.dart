@@ -1,4 +1,5 @@
 import 'package:criando_gerenaciamento_estado/controllers/state_observable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -51,6 +52,70 @@ void main() {
 
     expect(productController.state, isA<SuccessState>());
   });
+
+  test("Should generate states in sequence", () {
+    final ProductController productController = ProductController();
+
+    expect(
+      productController.asStream(),
+      emitsInOrder(
+        [
+          isInstanceOf<InitialState>(),
+          isInstanceOf<LoadingState>(),
+          isInstanceOf<SuccessState<List<Product>>>(),
+        ],
+      ),
+    );
+
+    productController.getProducts();
+  });
+
+  test("Should generate states in sequence when we get error", () {
+    final ProductController productController = ProductController();
+
+    expect(
+      productController.asStream(),
+      emitsInOrder(
+        [
+          isInstanceOf<InitialState>(),
+          isInstanceOf<LoadingState>(),
+          isInstanceOf<ErrorState>(),
+        ],
+      ),
+    );
+
+    productController.generateError();
+  });
+
+  test("Should generate states in sequence when we get error", () {
+    final ProductController productController = ProductController();
+
+    expect(
+      productController.asStream(),
+      emitsInOrder(
+        [
+          isInstanceOf<InitialState>(),
+          isInstanceOf<LoadingState>(),
+          isInstanceOf<SuccessState>(),
+          isInstanceOf<LoadingState>(),
+          isInstanceOf<ErrorState>(),
+        ],
+      ),
+    );
+
+    productController.getProducts();
+
+    productController.generateError();
+  });
+
+  test("TestingValueNotifier", () {
+    final valueNotifier = ValueNotifier(0); //0
+
+    expect(valueNotifier.asStream(), emitsInOrder([0, 1, 2]));
+
+    valueNotifier.value++; //1
+    valueNotifier.value++; //2
+  });
 }
 
 abstract class BaseState {}
@@ -89,5 +154,21 @@ class ProductController extends StateObservable<BaseState> {
         Product(id: 1, name: "Primeiro produto"),
       ],
     );
+  }
+
+  void generateError() {
+    state = LoadingState();
+
+    try {
+      throw Exception();
+      state = SuccessState(
+        data: [
+          Product(id: 1, name: "Primeiro produto"),
+          Product(id: 1, name: "Primeiro produto"),
+        ],
+      );
+    } catch (e) {
+      state = ErrorState(message: e.toString());
+    }
   }
 }
