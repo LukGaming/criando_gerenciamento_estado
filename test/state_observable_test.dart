@@ -1,6 +1,11 @@
 import 'package:criando_gerenaciamento_estado/controllers/state_observable.dart';
+import 'package:criando_gerenaciamento_estado/extensions/state_observable_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'testable/controllers/product_controller.dart';
+import 'testable/entities/product_entity.dart';
+import 'testable/states/base_state.dart';
 
 void main() {
   group("Should test StateObservable", () {
@@ -87,7 +92,9 @@ void main() {
     productController.generateError();
   });
 
-  test("Should generate states in sequence when we get error", () {
+  test(
+      "Should generate states in sequence when we have success and after get error",
+      () {
     final ProductController productController = ProductController();
 
     expect(
@@ -116,59 +123,4 @@ void main() {
     valueNotifier.value++; //1
     valueNotifier.value++; //2
   });
-}
-
-abstract class BaseState {}
-
-class InitialState extends BaseState {}
-
-class LoadingState extends BaseState {}
-
-class SuccessState<T extends Object> extends BaseState {
-  final T data;
-  SuccessState({required this.data});
-}
-
-class ErrorState extends BaseState {
-  final String message;
-
-  ErrorState({required this.message});
-}
-
-class Product {
-  final int id;
-  final String name;
-
-  Product({required this.id, required this.name});
-}
-
-class ProductController extends StateObservable<BaseState> {
-  ProductController() : super(InitialState());
-
-  void getProducts() {
-    state = LoadingState();
-
-    state = SuccessState(
-      data: [
-        Product(id: 1, name: "Primeiro produto"),
-        Product(id: 1, name: "Primeiro produto"),
-      ],
-    );
-  }
-
-  void generateError() {
-    state = LoadingState();
-
-    try {
-      throw Exception();
-      state = SuccessState(
-        data: [
-          Product(id: 1, name: "Primeiro produto"),
-          Product(id: 1, name: "Primeiro produto"),
-        ],
-      );
-    } catch (e) {
-      state = ErrorState(message: e.toString());
-    }
-  }
 }

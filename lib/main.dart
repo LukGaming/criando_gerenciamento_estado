@@ -1,5 +1,6 @@
 import 'package:criando_gerenaciamento_estado/classes/counter_state.dart';
 import 'package:criando_gerenaciamento_estado/controllers/state_observable.dart';
+import 'package:criando_gerenaciamento_estado/extensions/state_observable_extensions.dart';
 import 'package:criando_gerenaciamento_estado/mixins/change_state_mixin.dart';
 import 'package:flutter/material.dart';
 
