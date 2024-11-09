@@ -1,7 +1,5 @@
-import 'package:criando_gerenaciamento_estado/classes/counter_state.dart';
-import 'package:criando_gerenaciamento_estado/controllers/state_observable.dart';
-import 'package:criando_gerenaciamento_estado/extensions/state_observable_extensions.dart';
-import 'package:criando_gerenaciamento_estado/mixins/change_state_mixin.dart';
+import 'package:criando_gerenaciamento_estado/builders/stream_notifier_builder.dart';
+import 'package:criando_gerenaciamento_estado/controllers/stream_notifier_imp.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
@@ -28,50 +26,39 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with ChangeStateMixin {
-  final counterState = CounterState();
-  final observableCounter = StateObservable(0);
-  late StateObservable<int> newMixinCounter;
-
-  @override
-  void initState() {
-    useChangeState(counterState);
-    useChangeState(observableCounter);
-    newMixinCounter = useStateObservable(0);
-    super.initState();
-  }
+class _MyHomePageState extends State<MyHomePage> {
+  final _counterNotifier = StreamNotifier(0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Gerenciamento de estado"),
+        title: const Text("Testando Streams"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Valor do counterState: ${counterState.counter}"),
+            StreamNotifierBuilder(
+              listen: (context, state) {
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Valor emitido: $state"),
+                  ),
+                );
+              },
+              streamNotifier: _counterNotifier,
+              builder: (context, state) {
+                return Text("Valor do counter: ${_counterNotifier.state}");
+              },
+            ),
             ElevatedButton(
               onPressed: () {
-                counterState.increment();
+                _counterNotifier.emit(_counterNotifier.state + 1);
               },
-              child: const Text("Increment"),
-            ),
-            Text("Valor do observableCounter: ${observableCounter.state}"),
-            ElevatedButton(
-              onPressed: () {
-                observableCounter.state++;
-              },
-              child: const Text("Increment"),
-            ),
-            Text("Valor do newMixinStateObservable: ${newMixinCounter.state}"),
-            ElevatedButton(
-              onPressed: () {
-                newMixinCounter.state++;
-              },
-              child: const Text("Increment"),
-            ),
+              child: const Text("Incrementar"),
+            )
           ],
         ),
       ),
